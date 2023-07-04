@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="65">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title style="padding:10px;background-color: black;color:beige;">Weather Reporting System</title>
+    <style>
+        button {
+            background-color: green;
+            border-color: green;
+            color: white;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: large;
+            border-radius: 20px;
+            padding: 16px 32px;
+            text-decoration: none;
+            margin: auto;
+            display: block;
+            cursor: pointer;
+            text-align: center;
+            width: 200px;
+        }
+
+        .tempchart {
+            width: 700px;
+            height: 700px;
+            padding-left: 100px;
+            padding-right: 100px;
+            padding-bottom: 60px;
+            float: left;
+        }
+
+        .humchart {
+            width: 700px;
+            height: 700px;
+            padding-left: 100px;
+            padding-right: 100px;
+            padding-bottom: 60px;
+            float: left;
+        }
+
+        .preschart {
+            width: 700px;
+            height: 700px;
+            padding-left: 500px;
+            padding-right: 500px;
+            padding-bottom: 100px;
+            float: left;
+        }
+    </style>
+</head>
+<script src=" https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script>
+
+<body>
+    <h1 align="center" style="font-family: sans-serif;">WEATHER REPORTING SYSTEM</h1>
+    <!-- <button class="btn btn-success" onclick="updateChart()">Update</button> -->
+    <br>
+    <div class="tempchart">
+        <canvas id="tempChart1"></canvas>
+        <canvas id="tempChart2"></canvas>
+    </div>
+    <div class="humchart">
+        <canvas id="humChart1"></canvas>
+        <canvas id="humChart2"></canvas>
+    </div>
+    <div class="preschart">
+        <canvas id="presChart1"></canvas>
+        <canvas id="presChart2"></canvas>
+    </div>
+    <script>
+        var masterData;
+        var presData;
+        async function fetchPredData() {
+            await fetch("h/dashboard")
+                .then(res => res.json())
+                .then(data => {
+                    predData = data;
+                })
+                .then(() => {
+                    console.log(predData)
+                })
+        }
+        async function fetchChartData() {
+            await fetch("/chartdata")
+                .then(res => res.json())
+                .then(data => {
+                    masterData = data;
+                })
+                .then(() => {
+                    console.log(masterData)
+                })
+        }
+        function object_to_array(data) {
+            let res = []
+            // let cnt = 0
+            // for (let i in data) {
+            //     if (cnt > 10) {
+            //         break;
+            //     }
+            //     else {
+            //         res.push(data[i]);
+            //         cnt += 1
+            //     }
+            // }
+            for (let i in data) {
+                res.push(data[i]);
+            }
+            return res.slice(1).slice(-10);
+        }
+        async function main() {
+            let Values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+            var tempValues = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
+            var humValues = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
+            var presValues = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
+            let waterValues = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
+
+            await fetchChartData();
+            presValues = object_to_array(masterData['Pressure'])
+            // presValues = presValues.slice(1).slice(-10)
+            tempValues = object_to_array(masterData['Temperature_C'])
+            humValues = object_to_array(masterData['Humidity'])
+
+            // await fetchPredData();
+            // presValues_pred = object_to_array(predData['Pressure'])
+            // tempValues_pred = object_to_array(predData['Temperature_C'])
+            // humValues_pred = object_to_array(predData['Humidity'])
+
+            const xlabels = object_to_array(masterData['Time'])
+            console.log(xlabels)
+            var ch1 = new Chart("tempChart1", {
+                type: "line",
+                data: {
+                    labels: xlabels,
+                    datasets: [{
+                        fill: false,
+                        lineTension: 0,
+                        backgroundColor: "rgba(255,0,0,1.0)",
+                        borderColor: "rgba(255,0,0,0.9)",
+                        data: tempValues
+                    }]
+                },
+                options: {
+                    legend: { display: false },
+                    scales: {
+                        yAxes: [{ ticks: { min: 20, max: 40 } }],
+                    },
+                    title: {
+                        display: true,
+                        text: "Temperature (Celsius)",
+                        fontSize: 16,
+
+                    }
+                }
+            });
+            var ch2 = new Chart("tempChart2", {
+                type: "line",
+                data: {
+                    labels: xlabels,
+                    datasets: [{
+                        fill: false,
+                        lineTension: 0,
+                        backgroundColor: "rgba(0,0,255,1.0)",
+                        borderColor: "rgba(0,0,255,0.9)",
+                        data: [33.0, 33.0, 33.0, 33.0, 33.0, 33.0, 33.0, 34.0, 34.0, 34.0]
+                    }]
+                },
+                options: {
+                    legend: { display: false },
+                    scales: {
+                        yAxes: [{ ticks: { min: 20, max: 40 } }],
+                    },
+                    title: {
+                        display: true,
+                        text: "Temperature - Predicted",
+                        fontSize: 16,
+
+                    }
+                }
+            });
+            var ch3 = new Chart("humChart1", {
+                type: "line",
+                data: {
+                    labels: xlabels,
+                    datasets: [{
+                        fill: false,
+                        lineTension: 0,
+                        backgroundColor: "rgba(0,255,0,1.0)",
+                        borderColor: "rgba(0,255,0,0.9)",
+                        data: humValues
+                    }]
+                },
+                options: {
+                    legend: { display: false },
+                    scales: {
+                        yAxes: [{ ticks: { min: 30, max: 100 } }],
+                    },
+                    title: {
+                        display: true,
+                        text: "Humidity (RH)",
+                        fontSize: 16,
+
+                    }
+                }
+            });
+            var ch4 = new Chart("humChart2", {
+                type: "line",
+                data: {
+                    labels: xlabels,
+                    datasets: [{
+                        fill: false,
+                        lineTension: 0,
+                        backgroundColor: "rgba(0,0,255,1.0)",
+                        borderColor: "rgba(0,0,255,0.9)",
+                        data: [68.0, 68.0, 68.0, 68.0, 68.0, 68.0, 68.0, 68.0, 68.0, 68.0]
+                    }]
+                },
+                options: {
+                    legend: { display: false },
+                    scales: {
+                        yAxes: [{ ticks: { min: 30, max: 100 } }],
+                    },
+                    title: {
+                        display: true,
+                        text: "Humidity - Predicted",
+                        fontSize: 16,
+
+                    }
+                }
+            });
+            var ch5 = new Chart("presChart1", {
+                type: "line",
+                data: {
+                    labels: xlabels,
+                    datasets: [{
+                        fill: false,
+                        lineTension: 0,
+                        backgroundColor: "rgba(255,165,0,1.0)",
+                        borderColor: "rgba(255,165,0,0.9)",
+                        data: presValues
+                    }]
+                },
+                options: {
+                    legend: { display: false },
+                    scales: {
+                        yAxes: [{ ticks: { min: 950, max: 1050 } }],
+                    },
+                    title: {
+                        display: true,
+                        text: "Pressure (hPa)",
+                        fontSize: 16,
+
+                    }
+                }
+            });
+            var ch6 = new Chart("presChart2", {
+                type: "line",
+                data: {
+                    labels: xlabels,
+                    datasets: [{
+                        fill: false,
+                        lineTension: 0,
+                        backgroundColor: "rgba(0,0,255,1.0)",
+                        borderColor: "rgba(0,0,255,0.9)",
+                        data: [1007.0, 1007.0, 1006.0, 1006.0, 1006.0, 1006.0, 1006.0, 1006.0, 1006.0, 1005.0]
+
+                    }]
+                },
+                options: {
+                    legend: { display: false },
+                    scales: {
+                        yAxes: [{ ticks: { min: 950, max: 1050 } }],
+                    },
+                    title: {
+                        display: true,
+                        text: "Pressure - Predicted",
+                        fontSize: 16,
+
+                    }
+                }
+            });
+        }
+        main();
+        // function updateChart() {
+        //     // javascript API call
+        //     ch1.data.datasets[0].data = tempValues;
+        //     ch2.data.datasets[0].data = humValues;
+        //     ch3.data.datasets[0].data = presValues;
+        //     ch4.data.datasets[0].data = waterValues;
+        //     ch1.update();
+        //     ch2.update();
+        //     ch3.update();
+        //     ch4.update();
+
+        // };
+    </script>
+
+</body>
+
+</html>
